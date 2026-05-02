@@ -1,0 +1,183 @@
+{
+  "name": "n8n-ai-job-tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "job-tracker",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "01514b05-747e-400d-a0d7-422d8f0cd95e",
+      "name": "Webhook",
+      "webhookId": "c1646bce-ab90-464c-882b-8ffb0916319d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4223f359-16ea-49bd-b518-81088263af1b",
+              "name": "company",
+              "value": "={{ $json.body.company }}",
+              "type": "string"
+            },
+            {
+              "id": "20c98764-335c-4202-a6a8-ae7372834396",
+              "name": "role",
+              "value": "={{ $json.body.role }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "9d7d8339-512a-4dae-9237-e68cbd7af57d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Write a short professional cold email for an internship.\\n\\nCompany: Google\\nRole: Software Engineering Intern\\n\\nKeep it under 150 words, sound human, end with a call to action.\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "4a091ca2-93ff-4b51-b551-539a22ed7cec",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "fae22774-f653-4893-89e7-ae5cd9bcfdd4",
+          "mode": "list",
+          "cachedResultName": "Job Application Tracker",
+          "cachedResultUrl": "https://www.notion.so/fae22774f653489389e7ae5cd9bcfdd4"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Company|title",
+              "title": "={{ $('Edit Fields').item.json.company }}"
+            },
+            {
+              "key": "Role|rich_text",
+              "textContent": "={{ $('Edit Fields').item.json.role }}"
+            },
+            {
+              "key": "AI Email|rich_text",
+              "textContent": "={{ $('HTTP Request').item.json.choices[0].message.content }}"
+            },
+            {
+              "key": "Status|select",
+              "selectValue": "Pending"
+            },
+            {
+              "key": "Date|date",
+              "date": "={{ $now }}"
+            }
+          ]
+        },
+        "blockUi": {
+          "blockValues": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "5f1358a0-cec6-4809-8bea-1df46504cb8b",
+      "name": "Create a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "e1fx8ZnuEUTxdCad",
+          "name": "Notion account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4f1bd580-8cd5-45b1-b9fd-35a6d10b7220",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "517f45343eba1a4f83a47792d88536bc3ef48f9a109180886a76a87efb5a83aa"
+  },
+  "id": "3m2OQDbBObXiXrPI",
+  "tags": []
+}
